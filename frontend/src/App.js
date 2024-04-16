@@ -7,7 +7,6 @@ function App() {
   return (
     <div className="App">
       <Game />
-      <TextSquare />
     </div>
   );
 }
@@ -29,18 +28,15 @@ function TextSquare({ value, isInputDisabled, onCellChange }) {
 
 function Game() {
   let matrix = [
-    [1, 2, 3, , , 6, 7, 8, 9],
-    [1, 2, 3, , , 6, 7, 8, 9],
-    [1, 2, 3, , , 6, 7, 8, 9],
-    [1, 2, 3, , , 6, 7, 8, 9],
-    [1, 2, 3, , , 6, 7, 8, 9],
-    [1, 2, 3, , , 6, 7, 8, 9],
-
-    [1, 2, 3, , , 6, 7, 8, 9],
-    [1, 2, 3, , , 6, 7, 8, 9],
-    [1, 2, 3, , , 6, 7, 8, 9],
-
-
+    ["", "", "1", "", "5", "4", "", "", ""],
+    ["3", "4", "", "", "", "", "", "", "1"],
+    ["2", "", "", "", "1", "9", "", "7", ""],
+    ["4", "", "7", "9", "3", "1", "", "6", ""],
+    ["9", "1", "", "", "7", "", "3", "4", ""],
+    ["", "", "", "2", "", "5", "", "", "7"],
+    ["1", "3", "2", "", "9", "7", "", "", "5"],
+    ["", "6", "4", "5", "", "", "", "1", ""],
+    ["", "", "8", "1", "", "6", "", "", "4"],
   ]
   return (
     <div className="game-container">
@@ -52,13 +48,6 @@ function Game() {
 }
 
 function Grid({ matrix }) {
-  const [gridValues, setGridValues] = useState(Array(9).fill(Array(9).fill("")))
-
-  const [gridCellsDisabled, setGridCellsDisabled] = useState(Array(9).fill(Array(9).fill(false)))
-
-
-  // setGridValues(matrix)
-
   // disable cells that are initially filled
   const cellsDisabled = deepcopy(matrix)
   for (let i = 0; i < cellsDisabled.length; i++) {
@@ -67,21 +56,22 @@ function Grid({ matrix }) {
     }
   }
 
+  const [gridValues, setGridValues] = useState(matrix)
+  const [gridCellsDisabled, setGridCellsDisabled] = useState(cellsDisabled)
+
   async function handleChange(i, j, event) {
     // regex
     const isNumeric = (string) => /^[+-]?\d+(\.\d+)?$/.test(string)
 
     // validate if numeric and valid sudoku move
     const validateInput = async (inputValue) => {
-      console.log("type: ", typeof (inputValue))
-      console.log("inputValue: ", inputValue)
       // validate must be 1-9
       if (!isNumeric(inputValue)) {
         console.warn("Input is NOT a number.")
         return false
       }
 
-      return Math.random() > 0.5 // TO remove
+      return true
     }
 
 
@@ -90,19 +80,25 @@ function Grid({ matrix }) {
       console.log("inputValue is empty")
       return
     }
-    gridCellsDisabled[i][j] = false
-    setGridCellsDisabled(gridCellsDisabled)
+
+    const newGridCellsDisabled = deepcopy(gridCellsDisabled)
+    newGridCellsDisabled[i][j] = true
+    setGridCellsDisabled(newGridCellsDisabled)
 
     const valid = await validateInput(inputValue)
     console.log("valid: ", valid)
 
+    
+    const newGridValues = deepcopy(gridValues)
     if (valid) {
-      gridValues[i][j] = inputValue
-      setGridValues(gridValues)
+      newGridValues[i][j] = inputValue
+      setGridValues(newGridValues)
     } else {
       console.error("Input is invalid. Reseting value and enable square.")
-      gridCellsDisabled[i][j] = true
-      setGridCellsDisabled(gridCellsDisabled)
+      newGridValues[i][j] = ""
+      newGridCellsDisabled[i][j] = false
+      setGridValues(newGridValues)
+      setGridCellsDisabled(newGridCellsDisabled)
     }
   }
 
@@ -114,8 +110,8 @@ function Grid({ matrix }) {
             return (
               <TextSquare
                 key={`${i}${j}`}
-                value={matrix[i][j]}
-                isInputDisabled={cellsDisabled[i][j]}
+                value={gridValues[i][j]}
+                isInputDisabled={gridCellsDisabled[i][j]}
                 onCellChange={(event) => handleChange(i, j, event)}
               />
             );
