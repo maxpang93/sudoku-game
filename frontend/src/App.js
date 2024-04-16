@@ -12,67 +12,8 @@ function App() {
   );
 }
 
-function TextSquare() {
-  const [value, setValue] = useState("")
-  const [isInputDisabled, setIsInputDisabled] = useState(false)
-
-  const handleChange = async (event) => {
-    console.log("evnt", event)
-
-    const inputValue = event.target.value
-    if (inputValue.length === 0) {
-      console.log("inputValue is empty")
-      return
-    }
-  
-    setIsInputDisabled(true)
-    
-    const valid = await validateInput(inputValue)
-    console.log("valid: ", valid)
-    if (valid) {
-      setValue(inputValue)
-    } else {
-      console.error("Input is invalid. Reseting value and enable square.")
-      setValue("")
-      setIsInputDisabled(false)
-    }
-  }
-
-  const isNumeric = (string) => /^[+-]?\d+(\.\d+)?$/.test(string)
-
-  const validateInput = async (inputValue) => {
-    console.log("type: ", typeof(inputValue))
-    console.log("inputValue: ", inputValue)
-    // validate must be 1-9
-    if (!isNumeric(inputValue)) {
-      console.warn("Input is NOT a number.")
-      return false
-    }
-
-    return Math.random() > 0.5 // TO remove
-
-    // call backend to validate if input fulfills sudoku rules
-    try {
-      // TODO:
-      const resp = await fetch("https://httpbin.org/post", {
-        method: "POST",
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({input: inputValue})
-      })
-
-      const data = await resp.json()
-      console.log(data)
-
-    } catch (err) {
-      console.error(`Failed to validate input: ${err}`)
-      return false
-    }
-
-    return true
-  }
-
+function TextSquare({value, isInputDisabled, onCellChange}) {
+  console.log(typeof(onCellChange))
   return (
     <>
     <input 
@@ -80,7 +21,7 @@ function TextSquare() {
       type="text"
       value={value}
       maxLength={1}
-      onChange={handleChange}
+      onChange={onCellChange}
       disabled={isInputDisabled}
       />
     </>
@@ -112,18 +53,64 @@ function Game() {
 }
 
 function Grid({matrix}) {
-  const onSquareClick = () => { console.log("this is onSquareClick") }
+  const [gridValues, setGridValues] = useState(Array(9).fill(Array(9).fill("")))
 
+  const [gridCellsDisabled, setGridCellsDisabled] = useState(Array(9).fill(Array(9).fill(false)))
+
+
+  // setGridValues(matrix)
+
+  async function handleChangeFnGenerator(i, j) {
+    // regex
+    const isNumeric = (string) => /^[+-]?\d+(\.\d+)?$/.test(string)
+
+    // validate if numeric and valid sudoku move
+    const validateInput = async (inputValue) => {
+      console.log("type: ", typeof(inputValue))
+      console.log("inputValue: ", inputValue)
+      // validate must be 1-9
+      if (!isNumeric(inputValue)) {
+        console.warn("Input is NOT a number.")
+        return false
+      }
+
+      return Math.random() > 0.5 // TO remove
+    }
+
+    async function handleChange(event) {
+      const inputValue = event.target.value
+      if (inputValue.length === 0) {
+        console.log("inputValue is empty")
+        return
+      }
+      gridCellsDisabled[i][j] = false
+      setGridCellsDisabled(gridCellsDisabled)
+
+      const valid = await validateInput(inputValue)
+      console.log("valid: ", valid)
+
+      if (valid) {
+        gridValues[i][j] = inputValue
+        setGridValues(gridValues)
+      } else {
+        console.error("Input is invalid. Reseting value and enable square.")
+        gridCellsDisabled[i][j] = true
+        setGridCellsDisabled(gridCellsDisabled)
+      }
+    }
+    return handleChange
+  }
   return (
     <>
       {Array(9).fill(null).map((_, i) => (
         <div className="grid-row" key={i}>
           {Array(9).fill(null).map((_, j) => {
             return (
-              <Square
+              <TextSquare
                 key={`${i}${j}`} 
-                value={matrix[i][j]}
-                onSquareClick={onSquareClick}
+                value={gridValues[i][j]}
+                isInputDisabled={gridCellsDisabled[i][j]}
+                onCellChange={handleChangeFnGenerator(i,j)}
               />
               );
             })}
