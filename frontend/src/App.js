@@ -69,6 +69,9 @@ function Grid({ matrix }) {
       if (!isNumeric(inputValue)) {
         console.warn("Input is NOT a number.")
         return false
+      } else if (Number(inputValue) === 0) {
+        console.warn("0 is NOT a valid input.")
+        return false
       }
 
       return true
@@ -88,7 +91,7 @@ function Grid({ matrix }) {
     const valid = await validateInput(inputValue)
     console.log("valid: ", valid)
 
-    
+
     const newGridValues = deepcopy(gridValues)
     if (valid) {
       newGridValues[i][j] = inputValue
