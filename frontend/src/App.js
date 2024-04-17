@@ -64,7 +64,7 @@ function Grid({ matrix }) {
     const isNumeric = (string) => /^[+-]?\d+(\.\d+)?$/.test(string)
 
     // validate if numeric and valid sudoku move
-    const validateInput = async (inputValue) => {
+    const validateInput = (inputValue) => {
       // validate must be 1-9
       if (!isNumeric(inputValue)) {
         console.warn("Input is NOT a number.")
@@ -73,8 +73,36 @@ function Grid({ matrix }) {
         console.warn("0 is NOT a valid input.")
         return false
       }
+      return true
+    }
+
+    const checkIsValidSudoku = async (nextGridValues) => {
+      try {
+        const resp = await fetch("http://localhost:8081/validateSudokuInput", {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ Board: nextGridValues })
+        })
+
+        const data = await resp.json()
+        console.log(data)
+
+      } catch (err) {
+        console.error(`Failed to validate input: ${err}`)
+        return false
+      }
 
       return true
+    }
+
+    const resetValueAndEnableSquare = () => {
+      console.error("Input is invalid. Reseting value and enable square.")
+      newGridValues[i][j] = ""
+      newGridCellsDisabled[i][j] = false
+      setGridValues(newGridValues)
+      setGridCellsDisabled(newGridCellsDisabled)
     }
 
 
@@ -88,21 +116,25 @@ function Grid({ matrix }) {
     newGridCellsDisabled[i][j] = true
     setGridCellsDisabled(newGridCellsDisabled)
 
-    const valid = await validateInput(inputValue)
+    const valid = validateInput(inputValue)
     console.log("valid: ", valid)
+    if (!valid) {
+      resetValueAndEnableSquare()
+      return
+    }
 
+    const nextGridValues = deepcopy(gridValues)
+    nextGridValues[i][j] = inputValue
+    const isValidSudoku = await checkIsValidSudoku(nextGridValues)
+    console.log("isValidSudoku: ", isValidSudoku)
+    if (!isValidSudoku) {
+      resetValueAndEnableSquare()
+      return
+    }
 
     const newGridValues = deepcopy(gridValues)
-    if (valid) {
-      newGridValues[i][j] = inputValue
-      setGridValues(newGridValues)
-    } else {
-      console.error("Input is invalid. Reseting value and enable square.")
-      newGridValues[i][j] = ""
-      newGridCellsDisabled[i][j] = false
-      setGridValues(newGridValues)
-      setGridCellsDisabled(newGridCellsDisabled)
-    }
+    newGridValues[i][j] = inputValue
+    setGridValues(newGridValues)
   }
 
   return (
