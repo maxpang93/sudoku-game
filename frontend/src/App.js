@@ -11,21 +11,6 @@ function App() {
   );
 }
 
-function TextSquare({ value, isInputDisabled, onCellChange }) {
-  return (
-    <>
-      <input
-        className="text-square"
-        type="text"
-        value={value}
-        maxLength={1}
-        onChange={onCellChange}
-        disabled={isInputDisabled}
-      />
-    </>
-  )
-}
-
 function Game() {
   let matrix = [
     ["", "", "1", "", "5", "4", "", "", ""],
@@ -93,8 +78,6 @@ function Grid({ matrix }) {
         console.error(`Failed to validate input: ${err}`)
         return false
       }
-
-      return true
     }
 
     const resetValueAndEnableSquare = () => {
@@ -159,11 +142,18 @@ function Grid({ matrix }) {
   )
 }
 
-function Square({ value, onSquareClick }) {
+function TextSquare({ value, isInputDisabled, onCellChange }) {
   return (
-    <button className="square" onClick={onSquareClick}>
-      {value}
-    </button>
+    <>
+      <input
+        className="text-square"
+        type="text"
+        value={value}
+        maxLength={1}
+        onChange={onCellChange}
+        disabled={isInputDisabled}
+      />
+    </>
   )
 }
 
