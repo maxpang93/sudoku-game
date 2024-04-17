@@ -87,7 +87,7 @@ function Grid({ matrix }) {
         })
 
         const data = await resp.json()
-        console.log(data)
+        return data.valid
 
       } catch (err) {
         console.error(`Failed to validate input: ${err}`)

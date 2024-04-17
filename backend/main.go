@@ -45,6 +45,81 @@ func validateSudokuInputHandler(c *gin.Context) {
 }
 
 func isValidSudoku(board [][]string) bool {
-	log.Printf("Board received: %v", board)
+	rowSize := len(board)
+	columnSize := len(board[0])
+
+	for i := 0; i < rowSize; i++ {
+		for j := 0; j < columnSize; j++ {
+			log.Print(board[i][j])
+			if board[i][j] == "" {
+				continue
+			}
+			row := board[i]
+			column := extractColumn(board, j)
+
+			var validRow, validColumn, validSubbox bool
+			validRow = checkRow(row, j)
+			validColumn = checkColumn(column, i)
+			validSubbox = checkSubbox(board, i, j)
+			// fmt.Println(i,j)
+			// fmt.Println(validRow, validColumn, validSubbox)
+			if !(validRow && validColumn && validSubbox) {
+				return false
+			}
+		}
+	}
+
 	return true
+}
+
+func checkRow(row []string, y int) bool {
+	for i, item := range row {
+		if i == y {
+			continue
+		}
+		if item == row[y] {
+			return false
+		}
+	}
+	return true
+}
+
+func checkColumn(column []string, x int) bool {
+	for j, item := range column {
+		if j == x {
+			continue
+		}
+		if item == column[x] {
+			return false
+		}
+	}
+	return true
+}
+
+func checkSubbox(board [][]string, x, y int) bool {
+	x_start := (x / 3) * 3
+	y_start := (y / 3) * 3
+	// fmt.Println(x_start, y_start)
+
+	for i := x_start; i < x_start+3; i++ {
+		for j := y_start; j < y_start+3; j++ {
+			if i == x && j == y {
+				continue
+			}
+			if board[i][j] == board[x][y] {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
+func extractColumn(matrix [][]string, y int) []string {
+	var column []string
+	for _, row := range matrix {
+		column = append(column, row[y])
+	}
+	// fmt.Println(column)
+	return column
 }
