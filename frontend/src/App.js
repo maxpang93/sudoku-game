@@ -99,6 +99,8 @@ function Grid({ matrix }) {
 
     const resetValueAndEnableSquare = () => {
       console.error("Input is invalid. Reseting value and enable square.")
+      const newGridValues = deepcopy(gridValues)
+      const newGridCellsDisabled = deepcopy(gridCellsDisabled)
       newGridValues[i][j] = ""
       newGridCellsDisabled[i][j] = false
       setGridValues(newGridValues)
